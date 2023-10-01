@@ -1,0 +1,1 @@
+- Ajouter icones météo manquantes (éclair etc)
