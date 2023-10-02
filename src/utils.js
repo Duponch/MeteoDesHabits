@@ -46,6 +46,41 @@ export function getCityList(query) {
 	return filteredCities; 
 }
 
+export function getCityCustomStyle() {
+	const customStyles = {
+		control: (provided) => ({
+			...provided,
+			backgroundColor: '#f0f0f0',
+			borderColor: '#d9d9d9',
+			boxShadow: 'none',
+			"&:hover": {
+				borderColor: '#bfbfbf',
+			},
+		}),
+		menu: (provided) => ({
+			...provided,
+			zIndex: 3,
+			backgroundColor: '#f7f7f7',
+		}),
+		menuList: (provided) => ({
+			...provided,
+			padding: '0',
+		}),
+		option: (provided, state) => ({
+			...provided,
+			backgroundColor: state.isFocused ? '#e2e2e2' : 'transparent',
+			color: state.isSelected ? '#ff4f00' : '#333',
+			padding: '10px 20px',
+		}),
+		singleValue: (provided) => ({
+			...provided,
+			color: '#333',
+		}),
+	};
+
+	return customStyles;
+}
+
 export async function getCityDataApi(position) {
 	const geocodingUrl = `https://nominatim.openstreetmap.org/reverse?lat=${position.coords.latitude}&lon=${position.coords.longitude}&format=json`;
 	const response = await axios.get(geocodingUrl).catch(error => {

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import WeatherDisplay from './components/WeatherDisplay';
 import CityDisplay from './components/CityDisplay';
 import ClothingSuggestion from './components/ClothingSuggestion';
-import {filterClothesForWeather, getCityDataApi, getWeatherDataApi} from './utils';
+import { filterClothesForWeather, getCityDataApi, getWeatherDataApi } from './utils';
 import './App.css';
 
 function App() {
@@ -26,7 +26,7 @@ function App() {
 						const filteredData = data.list.filter(day => day.dt_txt.endsWith('12:00:00') && new Date(day.dt * 1000).toLocaleDateString() !== new Date().toLocaleDateString());
 						todaysData && filteredData.unshift(todaysData);
 
-						const extractedData = filteredData.map(day => ({date: new Date(day.dt * 1000).toLocaleDateString(), temp: day.main.temp, icon: `images/${day.weather[0].icon}.png`}));
+						const extractedData = filteredData.map(day => ({ date: new Date(day.dt * 1000).toLocaleDateString(), temp: day.main.temp, icon: `images/${day.weather[0].icon}.png` }));
 						const clothingData = extractedData.map(day => {
 							const isRainy = day.icon.includes('10');
 							const isSunny = day.icon.includes('01d');
@@ -47,10 +47,27 @@ function App() {
 		fetchData();
 	}, []);
 
-	const handleCityChange = (newCity) => {
+	// Met à jour les infos météo et les vêtements lors du chois d'une ville
+	const handleCityChange = async (newCity) => {
 		setCity(newCity);
-		// Optionnel : vous pourriez aussi vouloir rafraîchir les données météo pour la nouvelle ville
-		// getWeatherDataApi(newCity).then(...);
+
+		const data = await getWeatherDataApi(newCity, dayIndex);
+		if (data && data.list) {
+			const todaysData = data.list.find(day => new Date(day.dt * 1000).toLocaleDateString() === new Date().toLocaleDateString());
+			const filteredData = data.list.filter(day => day.dt_txt.endsWith('12:00:00') && new Date(day.dt * 1000).toLocaleDateString() !== new Date().toLocaleDateString());
+			todaysData && filteredData.unshift(todaysData);
+
+			const extractedData = filteredData.map(day => ({ date: new Date(day.dt * 1000).toLocaleDateString(), temp: day.main.temp, icon: `images/${day.weather[0].icon}.png` }));
+			const clothingData = extractedData.map(day => {
+				const isRainy = day.icon.includes('10');
+				const isSunny = day.icon.includes('01d');
+				const clothesForWeather = filterClothesForWeather(day.temp, isRainy, isSunny);
+				return { date: day.date, clothes: clothesForWeather };
+			});
+
+			setWeatherData(extractedData);
+			setClothingSuggestions(clothingData);
+		}
 	};
 
 	return (

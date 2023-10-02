@@ -2,72 +2,60 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Select from 'react-select';
 import { getCityList } from '../utils';
+import { getCityCustomStyle } from '../utils';
 import debounce from 'lodash.debounce';
 
 function CityDisplay({ city, onCityChange }) {
 	const [isEditing, setIsEditing] = useState(false);
 	const [options, setOptions] = useState([]);
 
+	// Récupération de la liste de villes pour l'autocomplete
 	const loadOptions = (inputValue) => {
-		const results = getCityList(inputValue);
-		const uniqueNames = new Set(results.map(city => city.Nom_commune));
-		const formattedOptions = Array.from(uniqueNames).map(name => ({
-			value: name,
-			label: name,
-		}));
-		setOptions(formattedOptions);
+		if (inputValue.length > 2) {
+			const results = getCityList(inputValue);
+			const uniqueNames = new Set(results.map(city => city.Nom_commune));
+			const formattedOptions = Array.from(uniqueNames).map(name => ({
+				value: name,
+				label: name,
+			}));
+			setOptions(formattedOptions);
+		}
 	};
 
-	const customStyles = {
-		control: (provided) => ({
-			...provided,
-			backgroundColor: '#f0f0f0',
-			borderColor: '#d9d9d9',
-			boxShadow: 'none',
-			"&:hover": {
-				borderColor: '#bfbfbf',
-			},
-		}),
-		menu: (provided) => ({
-			...provided,
-			zIndex: 3,
-			backgroundColor: '#f7f7f7',
-		}),
-		menuList: (provided) => ({
-			...provided,
-			padding: '0',
-		}),
-		option: (provided, state) => ({
-			...provided,
-			backgroundColor: state.isFocused ? '#e2e2e2' : 'transparent',
-			color: state.isSelected ? '#ff4f00' : '#333',
-			padding: '10px 20px',
-		}),
-		singleValue: (provided) => ({
-			...provided,
-			color: '#333',
-		}),
-	};
+	// La bibliothèque lodash permet d'avoir la fonction debounce pour les perfs
+	const debouncedLoadOptions = debounce(loadOptions, 100);
+	const customStyles = getCityCustomStyle();
+
+	const handleClickOutside = (event) => {
+        if (isEditing && !event.target.closest('.city')) {
+            setIsEditing(false);
+        }
+    };
+
+	// Enlevement de l'input lors du clique en dehors
+	useEffect(() => {
+        document.addEventListener('click', handleClickOutside);
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
+        };
+    }, [isEditing]);
 
 	return (
 		<div className="city" onClick={() => !isEditing && setIsEditing(true)}>
 			{isEditing ? (
 				<Select
-					styles={customStyles}  // appliquer les styles personnalisés ici
+					styles={customStyles}
 					options={options}
 					defaultValue={{ value: city, label: `${city}` }}
 					isSearchable={true}
-					onInputChange={loadOptions}
+					onInputChange={debouncedLoadOptions}
 					onChange={(selectedOption) => {
 						onCityChange(selectedOption.value);
 						setIsEditing(false);
 					}}
-					autoFocus
-				/>
+					autoFocus/>
 			) : (
-				<>
-					<i className="fa-solid fa-location-dot"></i> {city}
-				</>
+				<><i className="fa-solid fa-location-dot"></i> {city}</>
 			)}
 		</div>
 	);
