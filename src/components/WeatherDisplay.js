@@ -1,5 +1,5 @@
 import React from 'react';
-import { tempColor, getDayLabel } from '../utils';
+import {tempColor, getDayLabel} from '../utils';
 
 function WeatherDisplay({data, index}) {
 

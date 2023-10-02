@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import WeatherDisplay from './components/WeatherDisplay';
 import CityDisplay from './components/CityDisplay';
 import ClothingSuggestion from './components/ClothingSuggestion';
-import { filterClothesForWeather } from './utils';
+import {filterClothesForWeather, getCityDataApi, getWeatherDataApi} from './utils';
 import './App.css';
 
 function App() {
@@ -13,45 +12,53 @@ function App() {
 
 	useEffect(() => {
 		async function fetchData() {
-			const city = 'Toulouse';
-			const url = `http://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&appid=${process.env.REACT_APP_WEATHER_API_KEY}`;
 
-			const response = await axios.get(url).catch(error => {
-				console.error('Erreur lors de la récupération des données météo : ', error);
-			});
+			if (navigator.geolocation) {
+				navigator.geolocation.getCurrentPosition(async function (position) {
 
-			if (response.data && response.data.list) {
+					const city = 'Moscou';
+					//const city = await getCityDataApi(position);
+					const data = await getWeatherDataApi(city);
 
-				const todaysData = response.data.list.find(day => new Date(day.dt * 1000).toLocaleDateString() === new Date().toLocaleDateString());
-				const filteredData = response.data.list.filter(day => day.dt_txt.endsWith('12:00:00') && new Date(day.dt * 1000).toLocaleDateString() !== new Date().toLocaleDateString());
-				todaysData && filteredData.unshift(todaysData);
+					if (data && data.list) {
 
-				const extractedData = filteredData.map(day => ({
-					date: new Date(day.dt * 1000).toLocaleDateString(),
-					temp: day.main.temp,
-					icon: `images/${day.weather[0].icon}.png`
-				}));
+						const todaysData = data.list.find(day => new Date(day.dt * 1000).toLocaleDateString() === new Date().toLocaleDateString());
+						const filteredData = data.list.filter(day => day.dt_txt.endsWith('12:00:00') && new Date(day.dt * 1000).toLocaleDateString() !== new Date().toLocaleDateString());
+						todaysData && filteredData.unshift(todaysData);
 
-				const clothingData = extractedData.map(day => {
-					const isRainy = day.icon.includes('10'); // "10" is the prefix for rainy weather icons in OpenWeatherMap
-					const clothesForWeather = filterClothesForWeather(day.temp, isRainy);
-					return {date: day.date, clothes: clothesForWeather};
+						const extractedData = filteredData.map(day => ({date: new Date(day.dt * 1000).toLocaleDateString(), temp: day.main.temp, icon: `images/${day.weather[0].icon}.png`}));
+						const clothingData = extractedData.map(day => {
+							const isRainy = day.icon.includes('10');
+							const isSunny = day.icon.includes('01d');
+							const clothesForWeather = filterClothesForWeather(day.temp, isRainy, isSunny);
+							return { date: day.date, clothes: clothesForWeather };
+						});
+
+						setWeatherData(extractedData);
+						setCity(city);
+						setClothingSuggestions(clothingData);
+					}
 				});
 
-				setWeatherData(extractedData);
-				setCity(city);
-				setClothingSuggestions(clothingData);
+			} else {
+				console.error('La géolocalisation n\'est pas prise en charge par ce navigateur.');
 			}
 		}
 		fetchData();
 	}, []);
+
+	const handleCityChange = (newCity) => {
+		setCity(newCity);
+		// Optionnel : vous pourriez aussi vouloir rafraîchir les données météo pour la nouvelle ville
+		// getWeatherDataApi(newCity).then(...);
+	};
 
 	return (
 		<div className="app-container">
 			{weatherData.map((data, index) => (
 				<div key={`day-${data.date}`} className="daily-forecast">
 					<WeatherDisplay data={data} index={index} />
-					<CityDisplay city={city} />
+					<CityDisplay city={city} onCityChange={handleCityChange} />
 					<ClothingSuggestion clothingData={clothingSuggestions[index]} />
 				</div>
 			))}
