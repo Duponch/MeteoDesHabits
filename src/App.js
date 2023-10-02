@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import WeatherDisplay from './components/WeatherDisplay';
 import CityDisplay from './components/CityDisplay';
 import ClothingSuggestion from './components/ClothingSuggestion';
-import { filterClothesForWeather, getCityDataApi, getWeatherDataApi } from './utils';
+import { filterClothesForWeather, getCityNameApi, getWeatherDataApi } from './utils';
 import './App.css';
 
 function App() {
 	const [weatherData, setWeatherData] = useState([]);
 	const [clothingSuggestions, setClothingSuggestions] = useState([]);
-	const [city, setCity] = useState([]);
+	const [city, setCity] = useState(Array(weatherData.length).fill(''));
 
 	useEffect(() => {
 		async function fetchData() {
@@ -16,8 +16,7 @@ function App() {
 			if (navigator.geolocation) {
 				navigator.geolocation.getCurrentPosition(async function (position) {
 
-					const city = 'Moscou';
-					//const city = await getCityDataApi(position);
+					const city = await getCityNameApi(position);
 					const data = await getWeatherDataApi(city);
 
 					if (data && data.list) {
@@ -35,7 +34,7 @@ function App() {
 						});
 
 						setWeatherData(extractedData);
-						setCity(city);
+						setCity(Array(extractedData.length).fill(city));
 						setClothingSuggestions(clothingData);
 					}
 				});
@@ -48,10 +47,9 @@ function App() {
 	}, []);
 
 	// Met à jour les infos météo et les vêtements lors du chois d'une ville
-	const handleCityChange = async (newCity) => {
-		setCity(newCity);
-
-		const data = await getWeatherDataApi(newCity, dayIndex);
+	const handleCityChange = async (newCity, dayIndex) => {
+		
+		const data = await getWeatherDataApi(newCity);
 		if (data && data.list) {
 			const todaysData = data.list.find(day => new Date(day.dt * 1000).toLocaleDateString() === new Date().toLocaleDateString());
 			const filteredData = data.list.filter(day => day.dt_txt.endsWith('12:00:00') && new Date(day.dt * 1000).toLocaleDateString() !== new Date().toLocaleDateString());
@@ -65,8 +63,25 @@ function App() {
 				return { date: day.date, clothes: clothesForWeather };
 			});
 
-			setWeatherData(extractedData);
-			setClothingSuggestions(clothingData);
+			const updatedWeatherData = [...weatherData];
+			updatedWeatherData[dayIndex] = {
+				date: extractedData[dayIndex].date,
+				temp: extractedData[dayIndex].temp,
+				icon: extractedData[dayIndex].icon
+			};
+			const updatedClothingSuggestions = [...clothingSuggestions];
+			updatedClothingSuggestions[dayIndex] = {
+				date: clothingData[dayIndex].date,
+				clothes: clothingData[dayIndex].clothes
+			};
+
+			// Mettez à jour seulement la ville pour la journée spécifiée
+			const updatedCity = [...city];
+			updatedCity[dayIndex] = newCity;
+
+			setCity(updatedCity);
+			setWeatherData(updatedWeatherData);
+			setClothingSuggestions(updatedClothingSuggestions);
 		}
 	};
 
@@ -75,7 +90,7 @@ function App() {
 			{weatherData.map((data, index) => (
 				<div key={`day-${data.date}`} className="daily-forecast">
 					<WeatherDisplay data={data} index={index} />
-					<CityDisplay city={city} onCityChange={handleCityChange} />
+					<CityDisplay city={city[index]} onCityChange={handleCityChange} dayIndex={index} />
 					<ClothingSuggestion clothingData={clothingSuggestions[index]} />
 				</div>
 			))}

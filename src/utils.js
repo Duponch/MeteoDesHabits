@@ -43,7 +43,7 @@ export function getDayLabel(inputDateString, index) {
 
 export function getCityList(query) {
 	const filteredCities = citiesData.filter(city => city.Nom_commune.toLowerCase().startsWith(query.toLowerCase()));
-	return filteredCities; 
+	return filteredCities;
 }
 
 export function getCityCustomStyle() {
@@ -81,7 +81,7 @@ export function getCityCustomStyle() {
 	return customStyles;
 }
 
-export async function getCityDataApi(position) {
+export async function getCityNameApi(position) {
 	const geocodingUrl = `https://nominatim.openstreetmap.org/reverse?lat=${position.coords.latitude}&lon=${position.coords.longitude}&format=json`;
 	const response = await axios.get(geocodingUrl).catch(error => {
 		console.error('Erreur lors de la récupération de la ville de l\'utilisateur : ', error);

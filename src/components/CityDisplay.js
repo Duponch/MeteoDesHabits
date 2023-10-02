@@ -5,7 +5,7 @@ import { getCityList } from '../utils';
 import { getCityCustomStyle } from '../utils';
 import debounce from 'lodash.debounce';
 
-function CityDisplay({ city, onCityChange }) {
+function CityDisplay({ city, onCityChange, dayIndex }) {
 	const [isEditing, setIsEditing] = useState(false);
 	const [options, setOptions] = useState([]);
 
@@ -27,18 +27,18 @@ function CityDisplay({ city, onCityChange }) {
 	const customStyles = getCityCustomStyle();
 
 	const handleClickOutside = (event) => {
-        if (isEditing && !event.target.closest('.city')) {
-            setIsEditing(false);
-        }
-    };
+		if (isEditing && !event.target.closest('.city')) {
+			setIsEditing(false);
+		}
+	};
 
 	// Enlevement de l'input lors du clique en dehors
 	useEffect(() => {
-        document.addEventListener('click', handleClickOutside);
-        return () => {
-            document.removeEventListener('click', handleClickOutside);
-        };
-    }, [isEditing]);
+		document.addEventListener('click', handleClickOutside);
+		return () => {
+			document.removeEventListener('click', handleClickOutside);
+		};
+	}, [isEditing]);
 
 	return (
 		<div className="city" onClick={() => !isEditing && setIsEditing(true)}>
@@ -50,10 +50,10 @@ function CityDisplay({ city, onCityChange }) {
 					isSearchable={true}
 					onInputChange={debouncedLoadOptions}
 					onChange={(selectedOption) => {
-						onCityChange(selectedOption.value);
+						onCityChange(selectedOption.value, dayIndex);
 						setIsEditing(false);
 					}}
-					autoFocus/>
+					autoFocus />
 			) : (
 				<><i className="fa-solid fa-location-dot"></i> {city}</>
 			)}
@@ -63,7 +63,8 @@ function CityDisplay({ city, onCityChange }) {
 
 CityDisplay.propTypes = {
 	city: PropTypes.string.isRequired,
-	onCityChange: PropTypes.func.isRequired
+	onCityChange: PropTypes.func.isRequired,
+	dayIndex: PropTypes.number.isRequired
 };
 
 export default CityDisplay;

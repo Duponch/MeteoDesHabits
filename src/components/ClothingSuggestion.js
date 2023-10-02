@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 function ClothingSuggestion(props) {
-	const {clothingData} = props;
+	const { clothingData } = props;
 	return (
 		<div className="clothing-suggestions" id={`clothing-day-${clothingData.date}`}>
 			{clothingData.clothes.map((item, index) => (
@@ -22,7 +22,7 @@ function ClothingSuggestion(props) {
 ClothingSuggestion.propTypes = {
 	clothingData: PropTypes.shape({
 		date: PropTypes.string.isRequired,
-		clothes: PropTypes.arrayOf(PropTypes.shape({name: PropTypes.string.isRequired, icon: PropTypes.string.isRequired})).isRequired
+		clothes: PropTypes.arrayOf(PropTypes.shape({ name: PropTypes.string.isRequired, icon: PropTypes.string.isRequired })).isRequired
 	}).isRequired
 };
 

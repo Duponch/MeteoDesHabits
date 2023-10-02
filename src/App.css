@@ -33,7 +33,8 @@ body {
 .wheather-display {
 	background-repeat: repeat;
 	background-size: 100% 100%;
-	position: -webkit-sticky; /*Pour Safari*/
+	position: -webkit-sticky;
+	/*Pour Safari*/
 	position: sticky;
 	top: 0;
 	z-index: 10;
@@ -43,8 +44,10 @@ body {
 	background-color: #FFFFFF;
 	text-align: center;
 	display: flex;
-	align-items: center;/* Centrer verticalement les éléments */
-	justify-content: space-around;/* Espacer uniformément les éléments horizontalement */
+	align-items: center;
+	/* Centrer verticalement les éléments */
+	justify-content: space-around;
+	/* Espacer uniformément les éléments horizontalement */
 	box-sizing: border-box;
 	font-size: 28px;
 }
@@ -107,7 +110,8 @@ body {
 	width: 35px;
 	height: 35px;
 	z-index: 2;
-	overflow: hidden; /* Pour s'assurer que rien ne dépasse du conteneur */
+	overflow: hidden;
+	/* Pour s'assurer que rien ne dépasse du conteneur */
 }
 
 .number-circle {
