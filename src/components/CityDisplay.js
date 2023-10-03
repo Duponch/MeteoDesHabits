@@ -25,6 +25,7 @@ function CityDisplay({ city, onCityChange, dayIndex }) {
 	// La bibliothèque lodash permet d'avoir la fonction debounce pour les perfs
 	const debouncedLoadOptions = debounce(loadOptions, 100);
 	const customStyles = getCityCustomStyle();
+	const EmptyMessage = () => null;
 
 	const handleClickOutside = (event) => {
 		if (isEditing && !event.target.closest('.city')) {
@@ -53,7 +54,8 @@ function CityDisplay({ city, onCityChange, dayIndex }) {
 						onCityChange(selectedOption.value, dayIndex);
 						setIsEditing(false);
 					}}
-					autoFocus />
+					autoFocus 
+					components={{ NoOptionsMessage: EmptyMessage }} />
 			) : (
 				<><i className="fa-solid fa-location-dot"></i> {city}</>
 			)}
